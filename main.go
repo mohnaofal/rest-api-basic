@@ -63,6 +63,8 @@ func main() {
 
 // Create new user
 func Create(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	form := new(User)
 
 	json.NewDecoder(r.Body).Decode(form)
@@ -75,25 +77,26 @@ func Create(w http.ResponseWriter, r *http.Request) {
 
 	users = append(users, *form)
 
-	w.Header().Set("Content-Type", "application/json")
-
 	json.NewEncoder(w).Encode(form)
 }
 
 // ViewAll view all user
 func ViewAll(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	if len(users) == 0 {
 		w.WriteHeader(404)
 		w.Write([]byte("Data Not Found"))
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(users)
 }
 
 // View view user
 func View(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	idString := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(idString)
 	if err != nil {
@@ -109,12 +112,13 @@ func View(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)
 }
 
 // Update update user
 func Update(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	idString := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(idString)
 	if err != nil {
@@ -141,12 +145,13 @@ func Update(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)
 }
 
 // Delete delete user
 func Delete(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	idString := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(idString)
 	if err != nil {
@@ -169,7 +174,6 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]bool{
 		"success": true,
 	})
