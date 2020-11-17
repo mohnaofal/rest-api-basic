@@ -35,6 +35,7 @@ func main() {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/user", Create).Methods("POST")
+	r.HandleFunc("/users", ViewAll).Methods("GET")
 
 	fmt.Println("Listening port 9090")
 	http.ListenAndServe(":9090", r)
@@ -57,4 +58,16 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	json.NewEncoder(w).Encode(form)
+}
+
+// ViewAll view all user
+func ViewAll(w http.ResponseWriter, r *http.Request) {
+	if len(users) == 0 {
+		w.WriteHeader(404)
+		w.Write([]byte("Data Not Found"))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(users)
 }
