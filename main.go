@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -31,11 +33,27 @@ func findUserExist(form *User) bool {
 	return exist
 }
 
+func findUserByID(id int) (*User, error) {
+	var user *User
+	for i, v := range users {
+		if v.ID == id {
+			user = &users[i]
+		}
+	}
+
+	if user == nil {
+		return nil, errors.New("User Not Found")
+	}
+
+	return user, nil
+}
+
 func main() {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/user", Create).Methods("POST")
 	r.HandleFunc("/users", ViewAll).Methods("GET")
+	r.HandleFunc("/user/{id:[0-9]+}", View).Methods("GET")
 
 	fmt.Println("Listening port 9090")
 	http.ListenAndServe(":9090", r)
@@ -70,4 +88,25 @@ func ViewAll(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(users)
+}
+
+// View view user
+func View(w http.ResponseWriter, r *http.Request) {
+	idString := mux.Vars(r)["id"]
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		w.WriteHeader(400)
+		w.Write([]byte("ID could not be converted to integer"))
+		return
+	}
+
+	user, err := findUserByID(id)
+	if err != nil {
+		w.WriteHeader(404)
+		w.Write([]byte(fmt.Sprintf("Errors, %s", err.Error())))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(user)
 }
