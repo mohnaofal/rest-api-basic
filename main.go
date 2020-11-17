@@ -54,6 +54,7 @@ func main() {
 	r.HandleFunc("/user", Create).Methods("POST")
 	r.HandleFunc("/users", ViewAll).Methods("GET")
 	r.HandleFunc("/user/{id:[0-9]+}", View).Methods("GET")
+	r.HandleFunc("/user/{id:[0-9]+}", Update).Methods("PUT")
 
 	fmt.Println("Listening port 9090")
 	http.ListenAndServe(":9090", r)
@@ -105,6 +106,38 @@ func View(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(404)
 		w.Write([]byte(fmt.Sprintf("Errors, %s", err.Error())))
 		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(user)
+}
+
+// Update update user
+func Update(w http.ResponseWriter, r *http.Request) {
+	idString := mux.Vars(r)["id"]
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		w.WriteHeader(400)
+		w.Write([]byte("ID could not be converted to integer"))
+		return
+	}
+
+	exist, err := findUserByID(id)
+	if err != nil {
+		w.WriteHeader(404)
+		w.Write([]byte(fmt.Sprintf("Error, %s", err.Error())))
+		return
+	}
+
+	user := new(User)
+
+	json.NewDecoder(r.Body).Decode(user)
+
+	user.ID = id
+	for i, v := range users {
+		if v.ID == exist.ID {
+			users[i] = *user
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
